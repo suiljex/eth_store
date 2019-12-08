@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--  <link rel="stylesheet" href="writ.css">-->
+    <script src="vue.js"></script>
+    <title>Png Store</title>
+</head>
+<body>
+
+<header>
+    <h1>PNG STORE</h1>
+</header>
+
+<main>
+    <div id="app">
+        <form id="fileUpload">
+            <p>
+                <input type=file name=image>
+                <input type=submit value=Загрузить>
+            </p>
+        </form>
+        <h2>STORE OBJECTS</h2>
+        <p>
+        <ul>
+            <li v-for="obj in store_objects">
+                {{ obj['hash'] }}
+                <br>
+                <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']">
+                <br>
+                Price: {{ obj['price'] }} gwei
+                <br>
+                <button v-on:click="buyObject(obj['index'])">Купить</button>
+            </li>
+        </ul>
+        </p>
+
+        <h2>OWN OBJECTS</h2>
+        <p>
+        <ul>
+            <li v-for="obj in own_objects">
+                {{ obj['hash'] }}
+                <br>
+                <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']" v-on:click="getImgFull(obj['index'])">
+                <br>
+                Status: {{ obj['status'] }}
+                <button v-on:click="changeStatus(obj['index'])">Enable/Disable</button>
+                <br>
+                Status Sale: {{ obj['status_sale'] }}
+                <button v-on:click="payForSale(obj['index'])">Pay for sale</button>
+                <br>
+                Price: {{ obj['price'] }} gwei
+                <input type="text" placeholder="price" v-model="obj['new_price']">
+                <button v-on:click="changePrice(obj['index'], obj['new_price'])">Change price</button>
+            </li>
+        </ul>
+        </p>
+
+        <h1>DEBUG</h1>
+        <h2>ALL OBJECTS</h2>
+        <p>
+        <ul>
+            <li v-for="obj in all_objects">
+                <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']">
+                <br>
+                Hash: {{ obj['hash'] }}
+                <br>
+                Status: {{ obj['status'] }}
+                <br>
+                Status Sale: {{ obj['status_sale'] }}
+                <br>
+                Price: {{ obj['price'] }} gwei
+                <br>
+                Index: {{ obj['index'] }}
+                <br>
+                Owner: {{ obj['owner'] }}
+                <br>
+                Effective Owner: {{ obj['effective_owner'] }}
+            </li>
+        </ul>
+        </p>
+
+    </div>
+</main>
+
+<footer>
+    <p>Ясного пути и звездного неба над головой!</p>
+</footer>
+
+</body>
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="vendor/truffle-contract/dist/truffle-contract.js"></script>
+<script language="javascript" type="text/javascript" src="require.js"></script>
+<script language="javascript" type="text/javascript" src="web3.min.js"></script>-->
+<script language="javascript" type="text/javascript" src="eth_store_data.js"></script>
+<script language="javascript" type="text/javascript" src="index.js"></script>
+</html>
