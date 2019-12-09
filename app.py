@@ -295,6 +295,10 @@ transaction = contract.functions.SetServerAccount(app_data.account)\
 signed_txn = w3.eth.account.signTransaction(transaction, private_key=app_data.private_key)
 w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
+if contract.functions.server_account().call() != app_data.account:
+    print("Not contract administrator")
+    exit(4)
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0')
