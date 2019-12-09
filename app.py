@@ -216,18 +216,6 @@ def add_object():
     return jsonify(resp)
 
 
-# @app.route('/object/<string:obj_hash>/tags/')
-# def get_object_tags(obj_hash):
-#     object_tags = {'hash': obj_hash, 'tags': 'this is tags of ' + obj_hash}
-#     return jsonify(object_tags);
-#
-#
-# @app.route('/object/<string:obj_hash>/description/')
-# def get_object_description(obj_hash):
-#     object_description = {'hash': obj_hash, 'description': 'this is description of ' + obj_hash}
-#     return jsonify(object_description);
-
-
 @app.route('/object/<string:obj_hash>/min/', methods=['GET'])
 def get_object_min(obj_hash):
     resp = dict()
