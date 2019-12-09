@@ -18,8 +18,8 @@ contract PngStore is Ownable, DSMath
 
   Object[] public objects;
   mapping(address => string) public permitted_objects;
-
-  address server_account;
+  
+  address public server_account;
 
   uint256 public sell_fee = 0;
   uint256 public owner_share = 0;
@@ -27,7 +27,7 @@ contract PngStore is Ownable, DSMath
 
   uint256 balance = 0;
 
-  mapping (address => uint256) balanceOfSubject;
+  mapping (address => uint256) public balanceOfSubject;
 
   mapping (uint256 => bool) public statusOfObject;
   mapping (uint256 => bool) public statusSaleOfObject;
@@ -50,7 +50,7 @@ contract PngStore is Ownable, DSMath
     require(effectiveOwnerOfObject[_obj_id] == msg.sender);
     _;
   }
-
+  
   modifier IsServer()
   {
     require(msg.sender == server_account);
@@ -68,34 +68,29 @@ contract PngStore is Ownable, DSMath
     require(statusSaleOfObject[_obj_id] == true);
     _;
   }
-
+  
   modifier IsCreationPermitted(string memory _hash)
   {
     require(keccak256(abi.encodePacked(permitted_objects[msg.sender])) == keccak256(abi.encodePacked(_hash)));
     _;
   }
-
+  
   function SetServerAccount(address _account) external onlyOwner()
   {
     server_account = _account;
   }
-
+  
   function AddPermission(string calldata _hash, address _account) external IsServer()
   {
     permitted_objects[_account] = _hash;
     emit CreationPermitted(_hash, _account);
   }
-
+  
   function AddRequestKey(uint256 _obj_id, string calldata _pub_key) external IsObjectExists(_obj_id) IsEffectiveOwnerOf(_obj_id)
   {
     requestKey[_obj_id] = _pub_key;
   }
-
-  function GetRequestKey(uint256 _obj_id) external view returns (string memory)
-  {
-    return requestKey[_obj_id];
-  }
-
+  
   function SetSellFee(uint256 _fee) external onlyOwner()
   {
     require(_fee >= 0 && _fee <= 1);
@@ -255,11 +250,6 @@ contract PngStore is Ownable, DSMath
   {
     hash = objects[_obj_id].hash;
     owner = objects[_obj_id].owner;
-  }
-
-  function GetSubjectBalance(address _subj) external view returns(uint256)
-  {
-    return balanceOfSubject[_subj];
   }
 
   //Пересмотреть

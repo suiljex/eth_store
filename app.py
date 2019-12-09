@@ -266,7 +266,7 @@ def get_object_min(obj_hash):
             return jsonify(resp)
     resp['status'] = 'error'
     resp['message'] = 'Something went wrong uwu'
-    return jsonify(resp);
+    return jsonify(resp)
 
 
 if w3.isConnected() is False:
