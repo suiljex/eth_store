@@ -24,6 +24,7 @@ con = psycopg2.connect(
 
 ALLOWED_EXTENSIONS = {'png'}
 TEMP_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/temp/'
+PNG_TAGGER = './png_tagger'
 MIN_SIZE = 128, 128
 
 
@@ -182,7 +183,7 @@ def add_object():
                 readable_hash = hashlib.sha256(file_data).hexdigest()
                 resp['hash'] = str(readable_hash)
                 temp_tag = str(readable_hash) + ":" + str(w3.toChecksumAddress(request.headers['account']))
-                ret = subprocess.call('./png_tagger --file="' + filename_full + '" --tag="' + temp_tag + '"', shell=True)
+                ret = subprocess.call(PNG_TAGGER + ' --file="' + filename_full + '" --tag="' + temp_tag + '"', shell=True)
                 if ret != 0:
                     os.remove(filename_full)
                     resp = dict()
@@ -272,6 +273,16 @@ if w3.isConnected() is False:
     print("No connection to BC")
     exit(1)
 
+try:
+    cur = con.cursor()
+    cur.execute('SELECT 1')
+except psycopg2.OperationalError:
+    print("No connection to DB")
+    exit(2)
+
+if os.path.isfile(PNG_TAGGER) == False or os.access(PNG_TAGGER, os.X_OK) == False:
+    print("No png_tagger")
+    exit(3)
 
 nonce = w3.eth.getTransactionCount(app_data.account)
 transaction = contract.functions.SetServerAccount(app_data.account)\
