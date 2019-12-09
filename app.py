@@ -255,33 +255,6 @@ def get_object_min(obj_hash):
     return jsonify(resp);
 
 
-@app.route('/store/all/', methods=['GET'])
-def get_objects_all():
-    resp = dict()
-    if request.method == 'GET':
-        try:
-            cur = con.cursor()
-            cur.execute("""
-                            SELECT hash, extention, creation_date 
-                            FROM objects
-                        """)
-            rows = cur.fetchall()
-            resp['data'] = []
-            for row in rows:
-                resp['data'].append({'hash': str(row[0]), 'extention' : str(row[1])})
-            resp['status'] = 'success'
-            resp['message'] = 'All objects'
-            return jsonify(resp)
-        except:
-            # print(e)
-            resp['status'] = 'error'
-            resp['message'] = 'No object'
-            return jsonify(resp)
-    resp['status'] = 'error'
-    resp['message'] = 'Something went wrong uwu'
-    return jsonify(resp);
-
-
 if w3.isConnected() is False:
     print("No connection to BC")
     exit(1)
