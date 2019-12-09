@@ -9,6 +9,7 @@ import web3
 import app_data
 import random
 import string
+import subprocess
 
 w3 = web3.Web3(web3.Web3.HTTPProvider(app_data.provider_url))
 contract = w3.eth.contract(address=app_data.address, abi=app_data.abi)
@@ -178,9 +179,21 @@ def add_object():
             with open(filename_full, "rb") as f:
                 file_data = f.read()
                 f.close()
-                os.remove(filename_full)
                 readable_hash = hashlib.sha256(file_data).hexdigest()
                 resp['hash'] = str(readable_hash)
+                temp_tag = str(readable_hash) + ":" + str(w3.toChecksumAddress(request.headers['account']))
+                ret = subprocess.call('./png_tagger --file="' + filename_full + '" --tag="' + temp_tag + '"', shell=True)
+                if ret != 0:
+                    os.remove(filename_full)
+                    resp = dict()
+                    resp['status'] = 'error'
+                    resp['message'] = 'Not png'
+                    return jsonify(resp)
+
+            with open(filename_full, "rb") as f:
+                file_data = f.read()
+                f.close()
+                os.remove(filename_full)
                 try:
                     cur = con.cursor()
                     cur.execute("""
