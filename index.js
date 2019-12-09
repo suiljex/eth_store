@@ -5,6 +5,7 @@ let vm = new Vue({
     all_objects: [],
     store_objects: [],
     own_objects: [],
+    sale_price: -1,
   },
   methods: {
     Dummy: function () {
@@ -45,6 +46,7 @@ App = {
     await App.loadWeb3();
     await App.loadAccount();
     await App.loadContract();
+    await App.loadSalePrice();
     await App.loadObjects();
     await App.loadOwnObjects();
   },
@@ -91,7 +93,6 @@ App = {
 
   loadContract: async () => {
     console.log("loadContract");
-    // Create a JavaScript version of the smart contract
 
     App.contract = web3.eth.contract(eth_store_abi).at(eth_store_address);
 
@@ -100,12 +101,14 @@ App = {
         console.log(result.c[0]);
       }
     });
+  },
 
-    let price_temp = 2; //await App.contract.sale_price();
+  loadSalePrice: async () => {
+    console.log("loadSalePrice");
+
     await App.contract.sale_price.call((error, result) => {
       if (!error) {
-        price_temp = result.c[0];
-        console.log(price_temp);
+        vm.sale_price = result.c[0];
       }
     });
   },
