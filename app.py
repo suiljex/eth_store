@@ -1,25 +1,24 @@
-from flask import Flask, jsonify, request, send_file, render_template, redirect, send_from_directory
+from flask import Flask, jsonify, request, send_file, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 from PIL import Image
 import os
-import json
 import datetime
 import psycopg2
 import hashlib
 import web3
-import ContractData
+import app_data
 import random
 import string
 
-w3 = web3.Web3(web3.Web3.HTTPProvider("HTTP://192.168.230.129:7545"))
-contract = w3.eth.contract(address=ContractData.address, abi=ContractData.abi)
+w3 = web3.Web3(web3.Web3.HTTPProvider(app_data.provider_url))
+contract = w3.eth.contract(address=app_data.address, abi=app_data.abi)
 app = Flask(__name__)
 con = psycopg2.connect(
-    database="postgres",
-    user="postgres",
-    password="12345678",
-    host="127.0.0.1",
-    port="5432")
+    database=app_data.db_name,
+    user=app_data.db_user,
+    password=app_data.db_password,
+    host=app_data.db_url,
+    port=app_data.db_port)
 
 
 ALLOWED_EXTENSIONS = {'png'}
@@ -47,11 +46,6 @@ def send_static(path):
 def redirect_index():
     return redirect('/index.html')
 
-#
-# @app.route('/<string:page_name>/')
-# def send_static(page_name):
-#     return send_file('%s.html' % page_name)
-
 
 @app.route('/object/<int:obj_index>/full/', methods=['GET'])
 def get_object_full(obj_index):
@@ -63,8 +57,15 @@ def get_object_full(obj_index):
         public_key = randomString(32)
         try:
             cur = con.cursor()
-            cur.execute('INSERT INTO download_requests (private_key, public_key, index) VALUES (%s,%s,%s) ON CONFLICT (index) DO UPDATE SET private_key = %s, public_key = %s'
-                        , (private_key, public_key, obj_index, private_key, public_key))
+            cur.execute("""
+                            INSERT INTO download_requests (private_key, public_key, index) 
+                            VALUES (%(private_key)s, %(public_key)s, %(obj_index)s) 
+                            ON CONFLICT (index) 
+                            DO UPDATE SET private_key = %(private_key)s, public_key = %(public_key)s
+                        """
+                        , {'private_key': private_key
+                            , 'public_key': public_key
+                            , 'obj_index': obj_index})
         except psycopg2.Error as e:
             con.rollback()
             resp['status'] = 'error'
@@ -91,11 +92,20 @@ def get_object_full_image(obj_index, private_key):
     if request.method == 'GET':
         try:
             cur = con.cursor()
-            cur.execute('SELECT private_key, public_key FROM download_requests WHERE index = %s', (obj_index,))
+            cur.execute("""
+                            SELECT private_key, public_key 
+                            FROM download_requests 
+                            WHERE index = %(obj_index)s
+                        """
+                        , {'obj_index': obj_index})
             row = cur.fetchone()
             public_key = contract.functions.requestKey(obj_index).call()
             if private_key == row[0] and public_key == row[1]:
-                cur.execute('DELETE FROM download_requests WHERE index = %s', (obj_index,))
+                cur.execute("""
+                                DELETE FROM download_requests 
+                                WHERE index = %(obj_index)s
+                            """
+                            , {'obj_index': obj_index})
                 flag_allow_download = True
                 con.commit()
         except:
@@ -111,7 +121,12 @@ def get_object_full_image(obj_index, private_key):
                 obj_hash = temp_obj[0]
 
                 cur = con.cursor()
-                cur.execute('SELECT picture, extention FROM objects WHERE hash = %s', (obj_hash,))
+                cur.execute("""
+                                SELECT picture, extention 
+                                FROM objects 
+                                WHERE hash = %(obj_hash)s
+                            """
+                            , {'obj_hash': obj_hash})
                 blob = cur.fetchone()
                 filename_full = os.path.join(TEMP_FOLDER
                                              , datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S_') + obj_hash + "." + blob[1])
@@ -134,49 +149,6 @@ def get_object_full_image(obj_index, private_key):
     resp['status'] = 'error'
     resp['message'] = 'Something went wrong uwu'
     return jsonify(resp)
-
-
-# @app.route('/object/addforce/', methods=['POST'])
-# def add_object():
-#     resp = dict()
-#     if request.method == 'POST':
-#         # obj_hash = request.headers['hash']
-#         if 'image' not in request.files:
-#             resp['status'] = 'error'
-#             resp['message'] = 'No file attached in request'
-#             return jsonify(resp)
-#         file = request.files['image']
-#         if file.filename == '':
-#             resp['status'] = 'error'
-#             resp['message'] = 'No file selected'
-#             return jsonify(resp)
-#         if file and allowed_file(file.filename):
-#             filename = secure_filename(file.filename)
-#             filename_full = os.path.join(TEMP_FOLDER
-#                                          , datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S_') + filename)
-#             file.save(filename_full)
-#             with open(filename_full, "rb") as f:
-#                 file_data = f.read()
-#                 f.close()
-#                 os.remove(filename_full)
-#                 readable_hash = hashlib.sha256(file_data).hexdigest()
-#                 resp['hash'] = str(readable_hash)
-#                 try:
-#                     cur = con.cursor()
-#                     cur.execute('INSERT INTO objects (hash, extention, picture) VALUES (%s,%s,%s)'
-#                                      , (resp['hash'], 'png', psycopg2.Binary(file_data)))
-#                 except psycopg2.Error as e:
-#                     con.rollback()
-#                     resp['status'] = 'error'
-#                     resp['message'] = 'File already exists'
-#                     return jsonify(resp)
-#             con.commit()
-#             resp['status'] = 'success'
-#             resp['message'] = 'File uploaded'
-#             return jsonify(resp)
-#     resp['status'] = 'error'
-#     resp['message'] = 'Something went wrong uwu'
-#     return jsonify(resp);
 
 
 @app.route('/object/add/', methods=['POST'])
@@ -211,8 +183,13 @@ def add_object():
                 resp['hash'] = str(readable_hash)
                 try:
                     cur = con.cursor()
-                    cur.execute('INSERT INTO objects (hash, extention, picture) VALUES (%s,%s,%s)'
-                                     , (resp['hash'], 'png', psycopg2.Binary(file_data)))
+                    cur.execute("""
+                                    INSERT INTO objects (hash, extention, picture) 
+                                    VALUES (%(var_hash)s, %(var_ext)s, %(var_data)s)
+                                """
+                                , {'var_hash': resp['hash']
+                                    , 'var_ext': 'png'
+                                    , 'var_data': psycopg2.Binary(file_data)})
                 except psycopg2.Error as e:
                     con.rollback()
                     resp['status'] = 'error'
@@ -220,15 +197,15 @@ def add_object():
                     return jsonify(resp)
             con.commit()
 
-            nonce = w3.eth.getTransactionCount(ContractData.account)
+            nonce = w3.eth.getTransactionCount(app_data.account)
             transaction = contract.functions.AddPermission(str(readable_hash), w3.toChecksumAddress(request.headers['account'])) \
                 .buildTransaction({
-                'from': ContractData.account
+                'from': app_data.account
                 , 'gasPrice': w3.toWei('1', 'gwei')
                 , 'gas': 3000000
                 , 'nonce': nonce
             })
-            signed_txn = w3.eth.account.signTransaction(transaction, private_key=ContractData.private_key)
+            signed_txn = w3.eth.account.signTransaction(transaction, private_key=app_data.private_key)
             w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
             resp['status'] = 'success'
@@ -258,7 +235,12 @@ def get_object_min(obj_hash):
     if request.method == 'GET':
         try:
             cur = con.cursor()
-            cur.execute('SELECT picture, extention FROM objects WHERE hash = %s', (obj_hash,))
+            cur.execute("""
+                            SELECT picture, extention 
+                            FROM objects
+                            WHERE hash = %(obj_hash)s
+                        """
+                        , {'obj_hash': obj_hash})
             blob = cur.fetchone()
             filename_full = os.path.join(TEMP_FOLDER
                                          , datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S_') + obj_hash + "." + blob[1])
@@ -291,7 +273,10 @@ def get_objects_all():
     if request.method == 'GET':
         try:
             cur = con.cursor()
-            cur.execute('SELECT hash, extention, creation_date FROM objects')
+            cur.execute("""
+                            SELECT hash, extention, creation_date 
+                            FROM objects
+                        """)
             rows = cur.fetchall()
             resp['data'] = []
             for row in rows:
@@ -314,41 +299,16 @@ if w3.isConnected() is False:
     exit(1)
 
 
-print(w3.eth.getBalance(ContractData.account))
-print(contract.functions.GetObjectsCount().call())
-
-nonce = w3.eth.getTransactionCount(ContractData.account)
-transaction = contract.functions.SetServerAccount(ContractData.account)\
+nonce = w3.eth.getTransactionCount(app_data.account)
+transaction = contract.functions.SetServerAccount(app_data.account)\
     .buildTransaction({
-        'from': ContractData.account
+        'from': app_data.account
         , 'gasPrice': w3.toWei('1', 'gwei')
         , 'gas': 3000000
         , 'nonce': nonce
         })
-signed_txn = w3.eth.account.signTransaction(transaction, private_key=ContractData.private_key)
+signed_txn = w3.eth.account.signTransaction(transaction, private_key=app_data.private_key)
 w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-#
-# nonce = w3.eth.getTransactionCount(ContractData.account)
-# transaction = contract.functions.AddPermission('loooooooooooooool', ContractData.account)\
-#     .buildTransaction({
-#         'from': ContractData.account
-#         , 'gasPrice': w3.toWei('1', 'gwei')
-#         , 'gas': 3000000
-#         , 'nonce': nonce
-#         })
-# signed_txn = w3.eth.account.signTransaction(transaction, private_key=ContractData.private_key)
-# w3.eth.sendRawTransaction(signed_txn.rawTransaction)
-#
-# nonce = w3.eth.getTransactionCount(ContractData.account)
-# transaction = contract.functions.CreateObject('loooooooooooooool')\
-#     .buildTransaction({
-#         'from': ContractData.account
-#         , 'gasPrice': w3.toWei('1', 'gwei')
-#         , 'gas': 3000000
-#         , 'nonce': nonce
-#         })
-# signed_txn = w3.eth.account.signTransaction(transaction, private_key=ContractData.private_key)
-# w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 
 
 if __name__ == '__main__':
