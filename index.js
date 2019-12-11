@@ -7,7 +7,8 @@ let vm = new Vue({
     own_objects: [],
     sale_price: -1,
     account: "",
-    account_balance: -1
+    account_balance: -1,
+    withdraw_amount: 0
   },
   methods: {
     Dummy: function () {
@@ -17,13 +18,15 @@ let vm = new Vue({
       return "/object/" + obj + "/min/";
     },
     getImgFull: function (index) {
-      //console.log("kek");
-      //window.open("/object/" + obj + "/full/");
       App.downloadObject(index);
       return;
     },
     buyObject: function (index) {
       App.buyObject(index);
+      return;
+    },
+    withdrawEther: function () {
+      App.withdrawEther(this.withdraw_amount);
       return;
     },
     payForSale: function (index) {
@@ -233,6 +236,17 @@ App = {
     });
   },
 
+  withdrawEther: async (amount) => {
+    console.log("withdrawEther");
+
+    await App.contract.Withdraw.sendTransaction(amount, {from: App.account}, (error, result) => {
+      if (!error) {
+        console.log(result);
+        window.location.reload();
+      }
+    });
+  },
+
   changeStatus: async (index) => {
     console.log("changeStatus");
 
@@ -311,20 +325,13 @@ App = {
 
       App.contract.AddRequestKey.sendTransaction(index, public_key, {from: App.account}, (error, result) => {
         if (!error) {
-          // let xmlHttp = new XMLHttpRequest();
-          // xmlHttp.open('GET', '/object/' + index + '/full/', false);
-          // xmlHttp.setRequestHeader('private_key', private_key);
-          // xmlHttp.send();
-          //
-          // if (xmlHttp.status != 200) {
-          //   console.log('Error 2nd download request');
-          //   return;
-          // }
           window.open('/object/' + index + '/full/' + private_key + '/');
-          //json_data = JSON.parse(xmlHttp.responseText);
-          // console.log(xmlHttp);
         }
       });
+    }
+    else
+    {
+      alert(json_data.message);
     }
   },
 };
@@ -368,7 +375,7 @@ document.getElementById('fileUpload').onsubmit = async (e) => {
     await App.addObject(result.hash);
     //alert(result.hash);
   } else {
-    alert('Error');
+    alert(result.message);
   }
 };
 
