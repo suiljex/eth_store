@@ -15,16 +15,22 @@
 
 <main>
     <div id="app">
+        <h2>Личный кабинет</h2>
+        <p>
+            Пользователь: {{ account }}
+            <br>
+            Баланс в системе: {{ account_balance }} wei
+        </p>
         <form id="fileUpload">
             <p>
-                <input type=file name=image>
-                <input type=submit value=Загрузить>
+                <input type=file name=image value="Выбрать изображение">
+                <input type=submit value="Загрузить">
             </p>
             <p>
-                Стоимость размещения/начала продажи: {{ sale_price }} gwei
+                Стоимость размещения/начала продажи: {{ sale_price }} wei
             </p>
         </form>
-        <h2>STORE OBJECTS</h2>
+        <h2>Магазин</h2>
         <p>
         <ul>
             <li v-for="obj in store_objects">
@@ -32,14 +38,14 @@
                 <br>
                 <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']">
                 <br>
-                Price: {{ obj['price'] }} gwei
+                Цена: {{ obj['price'] }} wei
                 <br>
                 <button v-on:click="buyObject(obj['index'])">Купить</button>
             </li>
         </ul>
         </p>
 
-        <h2>OWN OBJECTS</h2>
+        <h2>Мои объекты</h2>
         <p>
         <ul>
             <li v-for="obj in own_objects">
@@ -47,15 +53,15 @@
                 <br>
                 <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']" v-on:click="getImgFull(obj['index'])">
                 <br>
-                Status: {{ obj['status'] }}
-                <button v-on:click="changeStatus(obj['index'])">Enable/Disable</button>
+                Статус продажи: {{ obj['status'] }}
+                <button v-on:click="changeStatus(obj['index'])">Активировать/Дизактивировать</button>
                 <br>
-                Status Sale: {{ obj['status_sale'] }}
-                <button v-on:click="payForSale(obj['index'])">Pay for sale</button>
+                Объект оплачен для продажи: {{ obj['status_sale'] }}
+                <button v-on:click="payForSale(obj['index'])">Оплатить</button>
                 <br>
-                Price: {{ obj['price'] }} gwei
-                <input type="text" placeholder="price" v-model="obj['new_price']">
-                <button v-on:click="changePrice(obj['index'], obj['new_price'])">Change price</button>
+                Цена: {{ obj['price'] }} wei
+                <input type="text" placeholder="Новая цена" v-model="obj['new_price']">
+                <button v-on:click="changePrice(obj['index'], obj['new_price'])">Изменить цену</button>
             </li>
         </ul>
         </p>
@@ -73,7 +79,7 @@
                 <br>
                 Status Sale: {{ obj['status_sale'] }}
                 <br>
-                Price: {{ obj['price'] }} gwei
+                Price: {{ obj['price'] }} wei
                 <br>
                 Index: {{ obj['index'] }}
                 <br>

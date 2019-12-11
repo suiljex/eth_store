@@ -6,6 +6,8 @@ let vm = new Vue({
     store_objects: [],
     own_objects: [],
     sale_price: -1,
+    account: "",
+    account_balance: -1
   },
   methods: {
     Dummy: function () {
@@ -47,6 +49,7 @@ App = {
     await App.loadAccount();
     await App.loadContract();
     await App.loadSalePrice();
+    await App.loadAccountBalance();
     await App.loadObjects();
     await App.loadOwnObjects();
   },
@@ -89,6 +92,7 @@ App = {
     console.log("loadAccount");
     // Set the current blockchain account
     App.account = web3.eth.accounts[0]
+    vm.account = App.account;
   },
 
   loadContract: async () => {
@@ -109,6 +113,16 @@ App = {
     await App.contract.sale_price.call((error, result) => {
       if (!error) {
         vm.sale_price = result.c[0];
+      }
+    });
+  },
+
+  loadAccountBalance: async () => {
+    console.log("loadAccountBalance");
+
+    await App.contract.balanceOfSubject.call(App.account, (error, result) => {
+      if (!error) {
+        vm.account_balance = result.c[0];
       }
     });
   },
