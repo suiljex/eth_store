@@ -18,14 +18,14 @@ contract PngStore is Ownable, DSMath
 
   Object[] public objects;
   mapping(address => string) public permitted_objects;
-  
+
   address public server_account;
 
   uint256 public sell_fee = 0;
   uint256 public owner_share = 0;
   uint256 public sale_price = 0;
 
-  uint256 balance = 0;
+  uint256 public balance = 0;
 
   mapping (address => uint256) public balanceOfSubject;
 
@@ -41,65 +41,65 @@ contract PngStore is Ownable, DSMath
 
   modifier IsObjectExists(uint256 _obj_id)
   {
-    require(objects.length > _obj_id);
+    require(objects.length > _obj_id, "Object does not exists");
     _;
   }
 
   modifier IsEffectiveOwnerOf(uint256 _obj_id)
   {
-    require(effectiveOwnerOfObject[_obj_id] == msg.sender);
+    require(effectiveOwnerOfObject[_obj_id] == msg.sender, "Not effective owner of object");
     _;
   }
-  
+
   modifier IsServer()
   {
-    require(msg.sender == server_account);
+    require(msg.sender == server_account, "Not server account");
     _;
   }
 
   modifier IsObjectEnabled(uint256 _obj_id)
   {
-    require(statusOfObject[_obj_id] == true);
+    require(statusOfObject[_obj_id] == true, "Object is not for sale");
     _;
   }
 
   modifier IsObjectSalePaid(uint256 _obj_id)
   {
-    require(statusSaleOfObject[_obj_id] == true);
+    require(statusSaleOfObject[_obj_id] == true, "Object is not prepaid");
     _;
   }
-  
+
   modifier IsCreationPermitted(string memory _hash)
   {
-    require(keccak256(abi.encodePacked(permitted_objects[msg.sender])) == keccak256(abi.encodePacked(_hash)));
+    require(keccak256(abi.encodePacked(permitted_objects[msg.sender])) == keccak256(abi.encodePacked(_hash)), "Creation is not permitted");
     _;
   }
-  
+
   function SetServerAccount(address _account) external onlyOwner()
   {
     server_account = _account;
   }
-  
+
   function AddPermission(string calldata _hash, address _account) external IsServer()
   {
     permitted_objects[_account] = _hash;
     emit CreationPermitted(_hash, _account);
   }
-  
+
   function AddRequestKey(uint256 _obj_id, string calldata _pub_key) external IsObjectExists(_obj_id) IsEffectiveOwnerOf(_obj_id)
   {
     requestKey[_obj_id] = _pub_key;
   }
-  
+
   function SetSellFee(uint256 _fee) external onlyOwner()
   {
-    require(_fee >= 0 && _fee <= 1);
+    require(_fee >= 0 && _fee <= 1, "Fee is out of bounds");
     sell_fee = _fee;
   }
 
   function SetOwnerShare(uint256 _share) external onlyOwner()
   {
-    require(_share >= 0 && _share <= 1);
+    require(_share >= 0 && _share <= 1, "Owner share is out of bounds");
     owner_share = _share;
   }
 
@@ -110,14 +110,14 @@ contract PngStore is Ownable, DSMath
 
   function OwnerWithdraw(uint256 _amount) external onlyOwner()
   {
-    require(_amount <= balance);
+    require(_amount <= balance, "Not enough money");
     balance -= _amount;
     msg.sender.transfer(_amount);
   }
 
   function CreateObject(string calldata _hash) external payable IsCreationPermitted(_hash)
   {
-    require(msg.value == sale_price);
+    require(msg.value == sale_price, "Not enough money");
     balance += sale_price;
 
     uint32 time_now = uint32(now);
@@ -134,7 +134,7 @@ contract PngStore is Ownable, DSMath
 
   function StartSaleObject(uint256 _obj_id) external payable IsObjectExists(_obj_id) IsEffectiveOwnerOf(_obj_id)
   {
-    require(statusSaleOfObject[_obj_id] == false);
+    require(statusSaleOfObject[_obj_id] == false, "Object is already prepaid");
     require(msg.value == sale_price);
 
     statusSaleOfObject[_obj_id] = true;
@@ -159,8 +159,8 @@ contract PngStore is Ownable, DSMath
   function BuyObject(uint256 _obj_id) external payable IsObjectExists(_obj_id) IsObjectEnabled(_obj_id) IsObjectSalePaid(_obj_id)
   {
     uint32 time_now = uint32(now);
-    require(msg.value == priceOfObject[_obj_id]);
-    require(msg.sender != effectiveOwnerOfObject[_obj_id]);
+    require(msg.value == priceOfObject[_obj_id], "Not enough money");
+    require(msg.sender != effectiveOwnerOfObject[_obj_id], "Already owner");
     balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += msg.value * (1 - sell_fee);
     balance += msg.value * sell_fee;
 
