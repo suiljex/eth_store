@@ -1,3 +1,4 @@
+Vue.config.ignoredElements = ['grid', 'pic']
 let vm = new Vue({
   el: '#app',
   data: {
@@ -5,10 +6,22 @@ let vm = new Vue({
     all_objects: [],
     store_objects: [],
     own_objects: [],
-    sale_price: -1,
     account: "",
     account_balance: -1,
-    withdraw_amount: 0
+    withdraw_amount: 0,
+    current_object: {
+      'hash': '',
+      'owner': '',
+      'price': '',
+      'status': '',
+      'status_sale': '',
+      'effective_owner': '',
+    },
+    sale_price: -1,
+    server_balance: -1,
+    server_account: "",
+    server_share: -1,
+    owner_share: -1,
   },
   methods: {
     Dummy: function () {
@@ -16,6 +29,9 @@ let vm = new Vue({
     },
     getImgMinUrl: function (obj) {
       return "/object/" + obj + "/min/";
+    },
+    getImgMidUrl: function (obj) {
+      return "/object/" + obj + "/mid/";
     },
     getImgFull: function (index) {
       App.downloadObject(index);
@@ -41,20 +57,61 @@ let vm = new Vue({
       App.changePrice(index, new_price);
       return;
     },
+    openObject: function (index) {
+      window.open("/object.html?index=" + index, "_self");
+    },
   }
 });
 
 App = {
   loading: false,
 
-  load: async () => {
+  loadAll: async () => {
     await App.loadWeb3();
     await App.loadAccount();
     await App.loadContract();
-    await App.loadSalePrice();
+    await App.loadContractParams();
     await App.loadAccountBalance();
     await App.loadObjects();
     await App.loadOwnObjects();
+  },
+
+  loadStore: async () => {
+    await App.loadWeb3();
+    await App.loadAccount();
+    await App.loadContract();
+    await App.loadContractParams();
+    await App.loadObjects();
+  },
+
+  loadProfile: async () => {
+    await App.loadWeb3();
+    await App.loadAccount();
+    await App.loadContract();
+    await App.loadContractParams();
+    await App.loadAccountBalance();
+  },
+
+  loadLibrary: async () => {
+    await App.loadWeb3();
+    await App.loadAccount();
+    await App.loadContract();
+    await App.loadContractParams();
+    await App.loadOwnObjects();
+  },
+
+  loadObject: async () => {
+    await App.loadWeb3();
+    await App.loadAccount();
+    await App.loadContract();
+    await App.loadContractParams();
+  },
+
+  loadAdmin: async () => {
+    await App.loadWeb3();
+    await App.loadAccount();
+    await App.loadContract();
+    await App.loadContractParams();
   },
 
   // https://medium.com/metamask/https-medium-com-metamask-breaking-change-injecting-web3-7722797916a8
@@ -102,20 +159,34 @@ App = {
     console.log("loadContract");
 
     App.contract = web3.eth.contract(eth_store_abi).at(eth_store_address);
-
-    App.contract.GetObjectsCount.call((error, result) => {
-      if (!error) {
-        console.log(result.c[0]);
-      }
-    });
   },
 
-  loadSalePrice: async () => {
-    console.log("loadSalePrice");
+  loadContractParams: async () => {
+    console.log("loadContractParams");
 
     await App.contract.sale_price.call((error, result) => {
       if (!error) {
         vm.sale_price = result.c[0];
+      }
+    });
+    await App.contract.server_share.call((error, result) => {
+      if (!error) {
+        vm.server_share = result.c[0];
+      }
+    });
+    await App.contract.owner_share.call((error, result) => {
+      if (!error) {
+        vm.owner_share = result.c[0];
+      }
+    });
+    await App.contract.server_balance.call((error, result) => {
+      if (!error) {
+        vm.server_balance = result.c[0];
+      }
+    });
+    await App.contract.server_account.call((error, result) => {
+      if (!error) {
+        vm.server_account = result;
       }
     });
   },
@@ -193,7 +264,7 @@ App = {
     await App.contract.GetSubjectObjects.call(App.account, (error, result) => {
       if (!error) {
         const temp_objects = result;
-        console.log(temp_objects);
+        //console.log(temp_objects);
         for (obj_index in temp_objects) {
           let temp_obj = {};
           //console.log(temp_objects[obj_index].c[0]);
@@ -319,7 +390,7 @@ App = {
 
     if (json_data.status == 'success') {
       let public_key = json_data.public_key;
-      let private_key= json_data.private_key;
+      let private_key = json_data.private_key;
       console.log(public_key);
       console.log(private_key);
 
@@ -328,56 +399,93 @@ App = {
           window.open('/object/' + index + '/full/' + private_key + '/');
         }
       });
-    }
-    else
-    {
+    } else {
       alert(json_data.message);
     }
   },
 };
 
-
-function LoadObjects() {
-  var xmlHttp = new XMLHttpRequest();
-  // xmlHttp.responseType = 'json';
-  xmlHttp.open('GET', '/store/all/', false);
-  xmlHttp.send();
-  if (xmlHttp.status != 200) {
-    return;
+function getParameterByName(name, url) {
+  if (!url) {
+    url = window.location.href;
   }
-
-  let json_data = JSON.parse(xmlHttp.responseText);
-  if (json_data['status'] != 'success') {
-    return;
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+    results = regex.exec(url);
+  if (!results) {
+    return null;
   }
-
-  for (temp_obj in json_data['data']) {
-    vm.store_objects.push({hash: json_data['data'][temp_obj]['hash']})
+  if (!results[2]) {
+    return '';
   }
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-document.getElementById('fileUpload').onsubmit = async (e) => {
-  e.preventDefault();
-  let form_data = new FormData(document.getElementById('fileUpload'));
-  console.log(App.account);
+async function startApp() {
+  await App.loadAll();
 
-  let response = await fetch('/object/add/', {
-    method: 'POST',
-    headers: {
-      'account': App.account
-    },
-    body: form_data
-  });
+  try {
+    document.getElementById('fileUpload').onsubmit = async (e) => {
+      e.preventDefault();
+      let form_data = new FormData(document.getElementById('fileUpload'));
+      console.log(App.account);
 
-  let result = await response.json();
+      let response = await fetch('/object/add/', {
+        method: 'POST',
+        headers: {
+          'account': App.account
+        },
+        body: form_data
+      });
 
-  if (result.status == 'success') {
-    await App.addObject(result.hash);
-    //alert(result.hash);
-  } else {
-    alert(result.message);
+      let result = await response.json();
+
+      if (result.status == 'success') {
+        await App.addObject(result.hash);
+        //alert(result.hash);
+      } else {
+        alert(result.message);
+      }
+    };
+  } catch (e) {
+    console.log("No upload form");
   }
-};
 
-//LoadObjects();
-App.load();
+  try {
+    vm.current_object.index = parseInt(getParameterByName('index'), 10);
+    console.log(vm.current_object.index);
+
+    await App.contract.objects.call(vm.current_object.index, (error, result) => {
+      if (!error) {
+        vm.current_object.hash = result[0];
+        vm.current_object.owner = result[1];
+        App.contract.GetObjectParameters.call(vm.current_object.index, (error, result) => {
+          if (!error) {
+            vm.current_object.price = result[0];
+            vm.current_object.status = result[1];
+            vm.current_object.status_sale = result[2];
+            App.contract.effectiveOwnerOfObject.call(vm.current_object.index, (error, result) => {
+              if (!error) {
+                vm.current_object.effective_owner = result;
+              }
+            });
+          }
+        });
+      }
+    });
+  } catch (e) {
+    vm.current_object.hash = "";
+    vm.current_object.owner = "";
+    vm.current_object.price = "";
+    vm.current_object.status = "";
+    vm.current_object.status_sale = "";
+    vm.current_object.effective_owner = "";
+    console.log("No object in url");
+  }
+
+  console.log(vm.current_object);
+}
+
+startApp();
+
+console.log(vm.current_object);

@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/writ.css">
+    <script src="/vue.js"></script>
+    <title>Png Store</title>
+</head>
+<body>
+
+<header>
+    <h1>Магазин Цветных (и не только) картинок</h1>
+    <nav>
+        <ul>
+            <li><a href="/index.html">Главная</a></li>
+            <li><a href="/store.html">Магазин</a></li>
+            <li><a href="/profile.html">Профиль</a></li>
+            <li><a href="/library.html">Библиотека изображений</a></li>
+            <li><a href="/admin.html">Панель администратора</a></li>
+            <li><a href="/debug.html">DEBUG</a></li>
+        </ul>
+    </nav>
+</header>
+
+<main>
+    <div id="app">
+        Пользователь: {{ account }}
+
+        <pic>
+            <img :src="getImgMidUrl(current_object['hash'])" :alt="current_object['hash']">
+        </pic>
+
+        <div v-if="account != current_object['effective_owner']">
+            Цена: {{ current_object['price'] }} wei
+            <br>
+            <button v-on:click="buyObject(current_object['index'])">Купить</button>
+        </div>
+
+        <div v-else>
+            Статус продажи: {{ current_object['status'] }}
+            <button v-on:click="changeStatus(current_object['index'])" v-if="current_object['status'] == true">
+                Дизактивировать
+            </button>
+            <button v-on:click="changeStatus(current_object['index'])" v-else>
+                Активировать
+            </button>
+            <br>
+            Объект оплачен для продажи: {{ current_object['status_sale'] }}
+            <button v-on:click="payForSale(current_object['index'])" v-if="current_object['status_sale'] === false">
+                Оплатить
+            </button>
+            <br>
+            Цена: {{ current_object['price'] }} wei
+            <input type="text" placeholder="Новая цена" v-model="current_object['new_price']">
+            <button v-on:click="changePrice(current_object['index'], current_object['new_price'])">
+                Изменить цену
+            </button>
+            <br>
+            <button v-on:click="getImgFull(current_object['index'])">
+                Скачать оригинал
+            </button>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <p>Ясного пути и звездного неба над головой!</p>
+</footer>
+
+</body>
+<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script src="vendor/truffle-contract/dist/truffle-contract.js"></script>
+<script language="javascript" type="text/javascript" src="require.js"></script>
+<script language="javascript" type="text/javascript" src="web3.min.js"></script>-->
+<script language="javascript" type="text/javascript" src="/eth_store_data.js"></script>
+<script language="javascript" type="text/javascript" src="/index.js"></script>
+</html>

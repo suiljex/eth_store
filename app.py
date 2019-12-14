@@ -26,6 +26,7 @@ ALLOWED_EXTENSIONS = {'png'}
 TEMP_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/temp/'
 PNG_TAGGER = './png_tagger'
 MIN_SIZE = 128, 128
+MID_SIZE = 512, 512
 
 
 def allowed_file(filename):
@@ -251,6 +252,45 @@ def get_object_min(obj_hash):
                 f.close()
                 image = Image.open(filename_full)
                 image.thumbnail(MIN_SIZE)
+                image.save(filename_full)
+                resp = send_file(filename_full, as_attachment=True, mimetype='image/png')
+                os.remove(filename_full)
+                # resp['hash'] = str(obj_hash)
+                # resp['status'] = 'success'
+                # resp['message'] = 'Full image'
+                # resp['data'] = blob[0]
+                return resp
+        except:
+            # print(e)
+            resp['status'] = 'error'
+            resp['message'] = 'No object'
+            return jsonify(resp)
+    resp['status'] = 'error'
+    resp['message'] = 'Something went wrong uwu'
+    return jsonify(resp)
+
+
+@app.route('/object/<string:obj_hash>/mid/', methods=['GET'])
+def get_object_mid(obj_hash):
+    resp = dict()
+    obj_hash = str(obj_hash)
+    if request.method == 'GET':
+        try:
+            cur = con.cursor()
+            cur.execute("""
+                            SELECT picture, extention 
+                            FROM objects
+                            WHERE hash = %(obj_hash)s
+                        """
+                        , {'obj_hash': obj_hash})
+            blob = cur.fetchone()
+            filename_full = os.path.join(TEMP_FOLDER
+                                         , datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S_') + obj_hash + "." + blob[1])
+            with open(filename_full, "wb") as f:
+                f.write(blob[0])
+                f.close()
+                image = Image.open(filename_full)
+                image.thumbnail(MID_SIZE)
                 image.save(filename_full)
                 resp = send_file(filename_full, as_attachment=True, mimetype='image/png')
                 os.remove(filename_full)
