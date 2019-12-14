@@ -21,11 +21,11 @@ contract PngStore is Ownable, DSMath
 
   address public server_account;
 
-  uint256 public sell_fee = 0;
+  uint256 public server_share = 0;
   uint256 public owner_share = 0;
   uint256 public sale_price = 0;
 
-  uint256 public balance = 0;
+  uint256 public server_balance = 0;
 
   mapping (address => uint256) public balanceOfSubject;
 
@@ -91,10 +91,10 @@ contract PngStore is Ownable, DSMath
     requestKey[_obj_id] = _pub_key;
   }
 
-  function SetSellFee(uint256 _fee) external onlyOwner()
+  function SetServerShare(uint256 _share) external onlyOwner()
   {
-    require(_fee >= 0 && _fee <= 1, "Fee is out of bounds");
-    sell_fee = _fee;
+    require(_share >= 0 && _share <= 1, "Fee is out of bounds");
+    server_share = _share;
   }
 
   function SetOwnerShare(uint256 _share) external onlyOwner()
@@ -110,15 +110,15 @@ contract PngStore is Ownable, DSMath
 
   function OwnerWithdraw(uint256 _amount) external onlyOwner()
   {
-    require(_amount <= balance, "Not enough money");
-    balance -= _amount;
+    require(_amount <= server_balance, "Not enough money");
+    server_balance -= _amount;
     msg.sender.transfer(_amount);
   }
 
   function CreateObject(string calldata _hash) external payable IsCreationPermitted(_hash)
   {
     require(msg.value == sale_price, "Not enough money");
-    balance += sale_price;
+    server_balance += sale_price;
 
     uint32 time_now = uint32(now);
     uint256 id = objects.push(Object(_hash, msg.sender)) - 1;
@@ -161,8 +161,11 @@ contract PngStore is Ownable, DSMath
     uint32 time_now = uint32(now);
     require(msg.value == priceOfObject[_obj_id], "Not enough money");
     require(msg.sender != effectiveOwnerOfObject[_obj_id], "Already owner");
-    balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += msg.value * (1 - sell_fee);
-    balance += msg.value * sell_fee;
+
+    uint256 temp_balance = msg.value * (1 - server_share);
+    server_balance += msg.value * server_share;
+    balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += temp_balance * (1 - owner_share);
+    balanceOfSubject[objects[_obj_id].owner] += temp_balance * owner_share;
 
     uint256 id = objects.push(objects[_obj_id]) - 1;
     statusOfObject[id] = false;
