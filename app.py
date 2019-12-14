@@ -28,6 +28,7 @@ TEMP_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/temp/'
 PNG_TAGGER = './png_tagger'
 MIN_SIZE = 128, 128
 MID_SIZE = 512, 512
+gc_active = True
 
 
 def allowed_file(filename):
@@ -311,8 +312,9 @@ def get_object_mid(obj_hash):
 
 
 def databaseGC():
+    if gc_active == False:
+        return
     bc_objects = []
-    db_objects = []
 
     bc_obj_count = contract.functions.GetObjectsCount().call()
     for i in range(bc_obj_count):
@@ -382,5 +384,5 @@ databaseGC()
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0')
-
+    app.run(host='0.0.0.0', debug=True)
+    gc_active = False
