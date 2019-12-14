@@ -29,14 +29,42 @@
 
         <h2>Панель администратора</h2>
         Аккаунт администратора: {{ server_account }}
+
         <br>
         Баланс администратора: {{ server_balance }}
+        <div v-if="account === server_account">
+            <input type="text" placeholder="Сумма снятия" v-model="withdraw_amount">
+            <button v-on:click="withdrawEtherAdmin">
+                Снять средства
+            </button>
+        </div>
+
         <br>
         Доля администратора: {{ server_share }}
+        <div v-if="account === server_account">
+            <input type="text" placeholder="Новая доля" v-model="new_server_share">
+            <button v-on:click="setServerShare">
+                Изменить
+            </button>
+        </div>
+
         <br>
         Доля первоначального автора: {{ owner_share }}
+        <div v-if="account === server_account">
+            <input type="text" placeholder="Новая доля" v-model="new_owner_share">
+            <button v-on:click="setOwnerShare">
+                Изменить
+            </button>
+        </div>
+
         <br>
         Стоимость начала продажи: {{ sale_price }}
+        <div v-if="account === server_account">
+            <input type="text" placeholder="Новая стоимость" v-model="new_sale_price">
+            <button v-on:click="setSalePrice">
+                Изменить
+            </button>
+        </div>
     </div>
 </main>
 

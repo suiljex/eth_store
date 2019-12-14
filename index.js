@@ -22,6 +22,9 @@ let vm = new Vue({
     server_account: "",
     server_share: -1,
     owner_share: -1,
+    new_sale_price: 0,
+    new_server_share: 0,
+    new_owner_share: 0,
   },
   methods: {
     Dummy: function () {
@@ -43,6 +46,22 @@ let vm = new Vue({
     },
     withdrawEther: function () {
       App.withdrawEther(this.withdraw_amount);
+      return;
+    },
+    withdrawEtherAdmin: function () {
+      App.withdrawEtherAdmin(this.withdraw_amount);
+      return;
+    },
+    setServerShare: function () {
+      App.setServerShare(this.new_server_share);
+      return;
+    },
+    setOwnerShare: function () {
+      App.setOwnerShare(this.new_owner_share);
+      return;
+    },
+    setSalePrice: function () {
+      App.setSalePrice(this.new_sale_price);
       return;
     },
     payForSale: function (index) {
@@ -166,22 +185,22 @@ App = {
 
     await App.contract.sale_price.call((error, result) => {
       if (!error) {
-        vm.sale_price = result.c[0];
+        vm.sale_price = result;
       }
     });
     await App.contract.server_share.call((error, result) => {
       if (!error) {
-        vm.server_share = result.c[0];
+        vm.server_share = result;
       }
     });
     await App.contract.owner_share.call((error, result) => {
       if (!error) {
-        vm.owner_share = result.c[0];
+        vm.owner_share = result;
       }
     });
     await App.contract.server_balance.call((error, result) => {
       if (!error) {
-        vm.server_balance = result.c[0];
+        vm.server_balance = result;
       }
     });
     await App.contract.server_account.call((error, result) => {
@@ -196,7 +215,7 @@ App = {
 
     await App.contract.balanceOfSubject.call(App.account, (error, result) => {
       if (!error) {
-        vm.account_balance = result.c[0];
+        vm.account_balance = result;
       }
     });
   },
@@ -206,7 +225,8 @@ App = {
 
     await App.contract.sale_price.call((error, result) => {
       if (!error) {
-        let price_temp = result.c[0];
+        console.log(result);
+        let price_temp = result;
         App.contract.CreateObject.sendTransaction(hash, {from: App.account, value: price_temp}, (error, result) => {
           if (!error) {
             console.log(result);
@@ -318,6 +338,50 @@ App = {
     });
   },
 
+  withdrawEtherAdmin: async (amount) => {
+    console.log("withdrawEtherAdmin");
+
+    await App.contract.OwnerWithdraw.sendTransaction(amount, {from: App.account}, (error, result) => {
+      if (!error) {
+        console.log(result);
+        window.location.reload();
+      }
+    });
+  },
+
+  setServerShare: async (share) => {
+    console.log("setServerShare");
+
+    await App.contract.SetServerShare.sendTransaction(share, {from: App.account}, (error, result) => {
+      if (!error) {
+        console.log(result);
+        window.location.reload();
+      }
+    });
+  },
+
+  setOwnerShare: async (share) => {
+    console.log("setOwnerShare");
+
+    await App.contract.SetOwnerShare.sendTransaction(share, {from: App.account}, (error, result) => {
+      if (!error) {
+        console.log(result);
+        window.location.reload();
+      }
+    });
+  },
+
+  setSalePrice: async (amount) => {
+    console.log("setSalePrice");
+
+    await App.contract.SetSalePrice.sendTransaction(amount, {from: App.account}, (error, result) => {
+      if (!error) {
+        console.log(result);
+        window.location.reload();
+      }
+    });
+  },
+
   changeStatus: async (index) => {
     console.log("changeStatus");
 
@@ -351,7 +415,7 @@ App = {
 
     await App.contract.sale_price.call((error, result) => {
       if (!error) {
-        let price_temp = result.c[0];
+        let price_temp = result;
 
         App.contract.StartSaleObject.sendTransaction(index, {from: App.account, value: price_temp}, (error, result) => {
           if (!error) {

@@ -40,7 +40,7 @@
         <div v-else>
             Статус продажи: {{ current_object['status'] }}
             <button v-on:click="changeStatus(current_object['index'])" v-if="current_object['status'] == true">
-                Дизактивировать
+                Деактивировать
             </button>
             <button v-on:click="changeStatus(current_object['index'])" v-else>
                 Активировать

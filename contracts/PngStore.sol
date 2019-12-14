@@ -108,17 +108,10 @@ contract PngStore is Ownable, DSMath
     sale_price = _price;
   }
 
-  function OwnerWithdraw(uint256 _amount) external onlyOwner()
-  {
-    require(_amount <= server_balance, "Not enough money");
-    server_balance -= _amount;
-    msg.sender.transfer(_amount);
-  }
-
   function CreateObject(string calldata _hash) external payable IsCreationPermitted(_hash)
   {
     require(msg.value == sale_price, "Not enough money");
-    server_balance += sale_price;
+    server_balance += msg.value;
 
     uint32 time_now = uint32(now);
     uint256 id = objects.push(Object(_hash, msg.sender)) - 1;
@@ -166,7 +159,7 @@ contract PngStore is Ownable, DSMath
     uint256 temp_balance = msg.value * (10000 - server_share) / 10000;
 
     balanceOfSubject[objects[_obj_id].owner] += temp_balance * owner_share / 10000;
-    balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += msg.value * (10000 - owner_share) / 10000;
+    balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += temp_balance * (10000 - owner_share) / 10000;
 
     uint256 id = objects.push(objects[_obj_id]) - 1;
     statusOfObject[id] = false;
@@ -264,10 +257,26 @@ contract PngStore is Ownable, DSMath
       msg.sender.transfer(balanceOfSubject[msg.sender]);
       balanceOfSubject[msg.sender] = 0;
     }
-    else if (balanceOfSubject[msg.sender] >= _amount)
+    else
     {
+      require(balanceOfSubject[msg.sender] >= _amount);
       msg.sender.transfer(_amount);
       balanceOfSubject[msg.sender] -= _amount;
+    }
+  }
+
+  function OwnerWithdraw(uint256 _amount) external onlyOwner()
+  {
+    if (_amount == 0)
+    {
+      msg.sender.transfer(server_balance);
+      server_balance = 0;
+    }
+    else
+    {
+      require(server_balance >= _amount);
+      msg.sender.transfer(_amount);
+      server_balance -= _amount;
     }
   }
 }
