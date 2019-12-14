@@ -10,6 +10,7 @@ import app_data
 import random
 import string
 import subprocess
+import threading
 
 w3 = web3.Web3(web3.Web3.HTTPProvider(app_data.provider_url))
 contract = w3.eth.contract(address=app_data.address, abi=app_data.abi)
@@ -309,6 +310,44 @@ def get_object_mid(obj_hash):
     return jsonify(resp)
 
 
+def databaseGC():
+    bc_objects = []
+    db_objects = []
+
+    bc_obj_count = contract.functions.GetObjectsCount().call()
+    for i in range(bc_obj_count):
+        bc_objects.append(contract.functions.objects(i).call()[0])
+    bc_objects = list(dict.fromkeys(bc_objects))
+    #print(bc_objects)
+    try:
+        cur = con.cursor()
+        cur.execute("""
+                        SELECT hash, creation_timestamp
+                        FROM objects
+                        WHERE confirmed = %(confirmed)s
+                    """
+                    , {'confirmed': False})
+    except:
+        print("DB GC error")
+        threading.Timer(60, databaseGC).start()
+
+    rows = cur.fetchall()
+    for row in rows:
+        if row[0] not in bc_objects and (datetime.datetime.now() - row[1]).total_seconds() > 120:
+            try:
+                cur.execute("""
+                                DELETE FROM objects 
+                                WHERE hash = %(hash)s
+                            """
+                            , {'hash': row[0]})
+                con.commit()
+            except:
+                con.rollback()
+                print("DB GC error")
+                threading.Timer(60, databaseGC).start()
+    threading.Timer(60, databaseGC).start()
+
+
 if w3.isConnected() is False:
     print("No connection to BC")
     exit(1)
@@ -338,6 +377,8 @@ w3.eth.sendRawTransaction(signed_txn.rawTransaction)
 if contract.functions.server_account().call() != app_data.account:
     print("Not contract administrator")
     exit(4)
+
+databaseGC()
 
 
 if __name__ == '__main__':

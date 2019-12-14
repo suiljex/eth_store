@@ -19,9 +19,10 @@ CREATE TABLE download_requests (
 CREATE TABLE objects (
 	id int4 NOT NULL GENERATED ALWAYS AS IDENTITY,
 	hash bpchar(64) NOT NULL,
-	creation_date date NOT NULL DEFAULT now(),
 	extention varchar NULL,
 	picture bytea NULL,
+	creation_timestamp timestamp NOT NULL DEFAULT now(),
+	confirmed bool NOT NULL DEFAULT false,
 	CONSTRAINT objects_pk PRIMARY KEY (id),
 	CONSTRAINT objects_un UNIQUE (hash)
 );
