@@ -16,7 +16,7 @@
             <li><a href="/index.html">Главная</a></li>
             <li><a href="/store.html">Магазин</a></li>
             <li><a href="/profile.html">Профиль</a></li>
-            <li><a href="/library.html">Библиотека изображений</a></li>
+            <li><a href="/library.html">Галерея</a></li>
             <li><a href="/admin.html">Панель администратора</a></li>
             <li><a href="/debug.html">DEBUG</a></li>
         </ul>
@@ -25,83 +25,13 @@
 
 <main>
     <div id="app">
-        <h2>Личный кабинет</h2>
         <p>
             Пользователь: {{ account }}
-            <br>
-            Баланс в системе: {{ account_balance }} wei
-            <input type="text" placeholder="Сумма снятия" v-model="withdraw_amount">
-            <button v-on:click="withdrawEther">Снять средства</button>
         </p>
-        <form id="fileUpload">
-            <p>
-                <input type=file name=image value="Выбрать изображение">
-                <input type=submit value="Загрузить">
-            </p>
-            <p>
-                Стоимость размещения/начала продажи: {{ sale_price }} wei
-            </p>
-        </form>
-        <h2>Магазин</h2>
+        <h2>Главная</h2>
         <p>
-        <ul>
-            <li v-for="obj in store_objects">
-                {{ obj['hash'] }}
-                <br>
-                <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']">
-                <br>
-                Цена: {{ obj['price'] }} wei
-                <br>
-                <button v-on:click="buyObject(obj['index'])">Купить</button>
-            </li>
-        </ul>
+            Тут должно быть интересное описание
         </p>
-
-        <h2>Мои объекты</h2>
-        <p>
-        <ul>
-            <li v-for="obj in own_objects">
-                {{ obj['hash'] }}
-                <br>
-                <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']" v-on:click="getImgFull(obj['index'])">
-                <br>
-                Статус продажи: {{ obj['status'] }}
-                <button v-on:click="changeStatus(obj['index'])">Активировать/Дизактивировать</button>
-                <br>
-                Объект оплачен для продажи: {{ obj['status_sale'] }}
-                <button v-on:click="payForSale(obj['index'])">Оплатить</button>
-                <br>
-                Цена: {{ obj['price'] }} wei
-                <input type="text" placeholder="Новая цена" v-model="obj['new_price']">
-                <button v-on:click="changePrice(obj['index'], obj['new_price'])">Изменить цену</button>
-            </li>
-        </ul>
-        </p>
-
-        <h1>DEBUG</h1>
-        <h2>ALL OBJECTS</h2>
-        <p>
-        <ul>
-            <li v-for="obj in all_objects">
-                <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']">
-                <br>
-                Hash: {{ obj['hash'] }}
-                <br>
-                Status: {{ obj['status'] }}
-                <br>
-                Status Sale: {{ obj['status_sale'] }}
-                <br>
-                Price: {{ obj['price'] }} wei
-                <br>
-                Index: {{ obj['index'] }}
-                <br>
-                Owner: {{ obj['owner'] }}
-                <br>
-                Effective Owner: {{ obj['effective_owner'] }}
-            </li>
-        </ul>
-        </p>
-
     </div>
 </main>
 

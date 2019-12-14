@@ -16,7 +16,7 @@
             <li><a href="/index.html">Главная</a></li>
             <li><a href="/store.html">Магазин</a></li>
             <li><a href="/profile.html">Профиль</a></li>
-            <li><a href="/library.html">Библиотека изображений</a></li>
+            <li><a href="/library.html">Галерея</a></li>
             <li><a href="/admin.html">Панель администратора</a></li>
             <li><a href="/debug.html">DEBUG</a></li>
         </ul>
@@ -27,10 +27,16 @@
     <div id="app">
         Пользователь: {{ account }}
 
+        <h2> Изображение </h2>
+
         <pic>
             <img :src="getImgMidUrl(current_object['hash'])" :alt="current_object['hash']">
         </pic>
 
+        Хэш: {{ current_object['hash'] }}
+        <br>
+        Автор: {{ current_object['owner'] }}
+        <br>
         <div v-if="account != current_object['effective_owner']">
             Цена: {{ current_object['price'] }} wei
             <br>

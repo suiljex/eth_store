@@ -12,14 +12,14 @@
 <header>
     <h1>Магазин Цветных (и не только) картинок</h1>
     <nav>
-    <ul>
-        <li><a href="index.html">Главная</a></li>
-        <li><a href="store.html">Магазин</a></li>
-        <li><a href="profile.html">Профиль</a></li>
-        <li><a href="library.html">Библиотека изображений</a></li>
-        <li><a href="admin.html">Панель администратора</a></li>
-        <li><a href="debug.html">DEBUG</a></li>
-    </ul>
+        <ul>
+            <li><a href="/index.html">Главная</a></li>
+            <li><a href="/store.html">Магазин</a></li>
+            <li><a href="/profile.html">Профиль</a></li>
+            <li><a href="/library.html">Галерея</a></li>
+            <li><a href="/admin.html">Панель администратора</a></li>
+            <li><a href="/debug.html">DEBUG</a></li>
+        </ul>
     </nav>
 </header>
 
@@ -28,7 +28,7 @@
 
         <h1>DEBUG</h1>
         <h2>ALL OBJECTS</h2>
-        <p>
+
         <ul>
             <li v-for="obj in all_objects">
                 <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']">
@@ -48,7 +48,6 @@
                 Effective Owner: {{ obj['effective_owner'] }}
             </li>
         </ul>
-        </p>
 
     </div>
 </main>
