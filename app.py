@@ -347,6 +347,18 @@ def databaseGC():
                 con.rollback()
                 print("DB GC error")
                 threading.Timer(60, databaseGC).start()
+        elif row[0] in bc_objects:
+            try:
+                cur.execute("""
+                                UPDATE objects SET confirmed = true
+                                WHERE hash = %(hash)s
+                            """
+                            , {'hash': row[0]})
+                con.commit()
+            except:
+                con.rollback()
+                print("DB GC error")
+                threading.Timer(60, databaseGC).start()
     threading.Timer(60, databaseGC).start()
 
 
