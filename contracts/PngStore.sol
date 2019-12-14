@@ -93,13 +93,13 @@ contract PngStore is Ownable, DSMath
 
   function SetServerShare(uint256 _share) external onlyOwner()
   {
-    require(_share >= 0 && _share <= 1, "Fee is out of bounds");
+    require(_share >= 0 && _share <= 10000, "Fee is out of bounds");
     server_share = _share;
   }
 
   function SetOwnerShare(uint256 _share) external onlyOwner()
   {
-    require(_share >= 0 && _share <= 1, "Owner share is out of bounds");
+    require(_share >= 0 && _share <= 10000, "Owner share is out of bounds");
     owner_share = _share;
   }
 
@@ -162,10 +162,11 @@ contract PngStore is Ownable, DSMath
     require(msg.value == priceOfObject[_obj_id], "Not enough money");
     require(msg.sender != effectiveOwnerOfObject[_obj_id], "Already owner");
 
-    uint256 temp_balance = msg.value * (1 - server_share);
-    server_balance += msg.value * server_share;
-    balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += temp_balance * (1 - owner_share);
-    balanceOfSubject[objects[_obj_id].owner] += temp_balance * owner_share;
+    server_balance += msg.value * server_share / 10000;
+    uint256 temp_balance = msg.value * (10000 - server_share) / 10000;
+
+    balanceOfSubject[objects[_obj_id].owner] += temp_balance * owner_share / 10000;
+    balanceOfSubject[effectiveOwnerOfObject[_obj_id]] += msg.value * (10000 - owner_share) / 10000;
 
     uint256 id = objects.push(objects[_obj_id]) - 1;
     statusOfObject[id] = false;
