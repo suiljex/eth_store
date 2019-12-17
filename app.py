@@ -1,6 +1,6 @@
 from flask import Flask, jsonify, request, send_file, redirect, send_from_directory
 from werkzeug.utils import secure_filename
-from PIL import Image
+from PIL import Image, ImageFont, ImageDraw
 import os
 import datetime
 import psycopg2
@@ -26,6 +26,7 @@ con = psycopg2.connect(
 ALLOWED_EXTENSIONS = {'png'}
 TEMP_FOLDER = os.path.dirname(os.path.abspath(__file__)) + '/temp/'
 PNG_TAGGER = './png_tagger'
+CR_STRING = 'PNG STORE'
 MIN_SIZE = 128, 128
 MID_SIZE = 512, 512
 gc_active = True
@@ -254,6 +255,8 @@ def get_object_min(obj_hash):
                 f.close()
                 image = Image.open(filename_full)
                 image.thumbnail(MIN_SIZE)
+                draw = ImageDraw.Draw(image)
+                draw.text((10, 5), CR_STRING, fill=(0, 0, 0))
                 image.save(filename_full)
                 resp = send_file(filename_full, as_attachment=True, mimetype='image/png')
                 os.remove(filename_full)
@@ -293,6 +296,8 @@ def get_object_mid(obj_hash):
                 f.close()
                 image = Image.open(filename_full)
                 image.thumbnail(MID_SIZE)
+                draw = ImageDraw.Draw(image)
+                draw.text((10, 5), CR_STRING, fill=(0, 0, 0))
                 image.save(filename_full)
                 resp = send_file(filename_full, as_attachment=True, mimetype='image/png')
                 os.remove(filename_full)
