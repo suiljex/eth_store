@@ -45,7 +45,7 @@
                 <figure>
                     <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']" v-on:click="openObject(obj['index'])">
                     <br>
-                    <button v-on:click="getImgFull(current_object['index'])">
+                    <button v-on:click="getImgFull(obj['index'])">
                         Скачать оригинал
                     </button>
                 </figure>
