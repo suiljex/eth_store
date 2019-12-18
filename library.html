@@ -9,7 +9,7 @@
     <meta name="author" content="">
     <link rel="icon" href="/favicon.ico">
 
-    <title>Starter Template for Bootstrap</title>
+    <title>Png Store</title>
 
     <script src="/js/vue.js"></script>
     <!-- Bootstrap core CSS -->
@@ -48,8 +48,11 @@
     </nav>
 
     <div class="container">
-
         <div class="starter-template">
+            <h2> Галерея </h2>
+            <div v-if="own_objects.length === 0">
+                <p class="lead">Нет изображений</p>
+            </div>
             <div class="row">
                 <div class="card col-md-3" v-for="obj in own_objects">
                     <img class="card-img-top" :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']"
