@@ -53,6 +53,17 @@
                 <input type="text" placeholder="Сумма снятия" v-model="withdraw_amount">
                 <button v-on:click="withdrawEther">Снять средства</button>
             </p>
+
+            <h2>Загрузка изображения</h2>
+            <form id="fileUpload">
+                <p>
+                    <input type=file name=image value="Выбрать изображение">
+                    <input type=submit value="Загрузить">
+                </p>
+                <p>
+                    Стоимость размещения/начала продажи: {{ sale_price }} wei
+                </p>
+            </form>
             <h2> Галерея </h2>
             <div v-if="own_objects.length === 0">
                 <p class="lead">Нет изображений</p>
