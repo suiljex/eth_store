@@ -1,68 +1,78 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/writ.css">
-    <script src="/vue.js"></script>
-    <title>Png Store</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/favicon.ico">
+
+    <title>Starter Template for Bootstrap</title>
+
+    <script src="/js/vue.js"></script>
+    <!-- Bootstrap core CSS -->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/bootstrap-theme.min.css" rel="stylesheet">
 </head>
-<body>
 
-<header>
-    <h1>Магазин Цветных (и не только) картинок</h1>
-    <nav>
-        <ul>
-            <li><a href="/index.html">Главная</a></li>
-            <li><a href="/store.html">Магазин</a></li>
-            <li><a href="/profile.html">Профиль</a></li>
-            <li><a href="/library.html">Галерея</a></li>
-            <li><a href="/admin.html">Панель администратора</a></li>
-            <li><a href="/debug.html">DEBUG</a></li>
-        </ul>
-    </nav>
-</header>
-
-<main>
-    <div id="app">
-        <p>
-            Пользователь: {{ account }}
-        </p>
-        <h2>Загрузка изображения</h2>
-        <form id="fileUpload">
-            <p>
-                <input type=file name=image value="Выбрать изображение">
-                <input type=submit value="Загрузить">
-            </p>
-            <p>
-                Стоимость размещения/начала продажи: {{ sale_price }} wei
-            </p>
-        </form>
-
-        <h2>Мои объекты</h2>
-        <grid>
-            <div v-for="obj in own_objects">
-                <figure>
-                    <img :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']" v-on:click="openObject(obj['index'])">
-                    <br>
-                    <button v-on:click="getImgFull(obj['index'])">
-                        Скачать оригинал
-                    </button>
-                </figure>
+<div id="app">
+    <nav class="navbar navbar-inverse">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                        aria-expanded="false" aria-controls="navbar">
+                    <span class="sr-only">Toggle navigation</span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a class="navbar-brand" href="#">PNG Store</a>
             </div>
-        </grid>
-    </div>
-</main>
+            <div id="navbar" class="collapse navbar-collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="/index.html">Главная</a></li>
+                    <li><a href="/store.html">Магазин</a></li>
+                    <li><a href="/profile.html">Профиль</a></li>
+                    <li><a href="/library.html">Галерея</a></li>
+                    <li><a href="/admin.html">Панель администратора</a></li>
+                    <li><a href="/debug.html">DEBUG</a></li>
+                </ul>
 
-<footer>
-    <p>Ясного пути и звездного неба над головой!</p>
-</footer>
+                <span class="navbar-text">
+                Пользователь: {{ account }}
+            </span>
+            </div><!--/.nav-collapse -->
+        </div>
+    </nav>
 
+    <div class="container">
+
+        <div class="starter-template">
+            <div class="row">
+                <div class="card col-md-3" v-for="obj in own_objects">
+                    <img class="card-img-top" :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']"
+                         v-on:click="openObject(obj['index'])">
+                    <div class="card-body">
+                        <button v-on:click="getImgFull(obj['index'])">
+                            Скачать оригинал
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div><!-- /.container -->
+</div>
+
+
+<!-- Bootstrap core JavaScript
+================================================== -->
+<!-- Placed at the end of the document so the pages load faster -->
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+<script>window.jQuery || document.write('<script src="/js/jquery.min.js"><\/script>')</script>
+<script src="/js/bootstrap.min.js"></script>
+<script language="javascript" type="text/javascript" src="/js/eth_store_data.js"></script>
+<script language="javascript" type="text/javascript" src="/js/index.js"></script>
 </body>
-<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
-<script src="vendor/truffle-contract/dist/truffle-contract.js"></script>
-<script language="javascript" type="text/javascript" src="require.js"></script>
-<script language="javascript" type="text/javascript" src="web3.min.js"></script>-->
-<script language="javascript" type="text/javascript" src="/eth_store_data.js"></script>
-<script language="javascript" type="text/javascript" src="/index.js"></script>
 </html>
