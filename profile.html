@@ -48,36 +48,43 @@
     <div class="container">
         <div class="starter-template">
             <h2>Профиль</h2>
-            <p>
-                Баланс в системе: {{ account_balance }} wei
-                <input type="text" placeholder="Сумма снятия" v-model="withdraw_amount">
-                <button v-on:click="withdrawEther">Снять средства</button>
-            </p>
+            <div v-if="account">
+                <p>
+                    Баланс в системе: {{ account_balance }} wei
+                    <input type="text" placeholder="Сумма снятия" v-model="withdraw_amount">
+                    <button v-on:click="withdrawEther">Снять средства</button>
+                </p>
 
-            <h2>Загрузка изображения</h2>
-            <form id="fileUpload">
-                <p>
-                    <input type=file name=image value="Выбрать изображение">
-                    <input type=submit value="Загрузить">
-                </p>
-                <p>
-                    Стоимость размещения/начала продажи: {{ sale_price }} wei
-                </p>
-            </form>
-            <h2> Галерея </h2>
-            <div v-if="own_objects.length === 0">
-                <p class="lead">Нет изображений</p>
-            </div>
-            <div class="row">
-                <div class="card col-md-3" v-for="obj in own_objects">
-                    <img class="card-img-top" :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']"
-                         v-on:click="openObject(obj['index'])">
-                    <div class="card-body">
-                        <button v-on:click="getImgFull(obj['index'])">
-                            Скачать оригинал
-                        </button>
+                <h2>Загрузка изображения</h2>
+                <form id="fileUpload">
+                    <p>
+                        <input type=file name=image value="Выбрать изображение">
+                        <input type=submit value="Загрузить">
+                    </p>
+                    <p>
+                        Стоимость размещения/начала продажи: {{ sale_price }} wei
+                    </p>
+                </form>
+                <h2> Галерея </h2>
+                <div v-if="own_objects.length === 0">
+                    <p class="lead">Нет изображений</p>
+                </div>
+                <div class="row">
+                    <div class="card col-md-3" v-for="obj in own_objects">
+                        <img class="card-img-top" :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']"
+                             v-on:click="openObject(obj['index'])">
+                        <div class="card-body">
+                            <button v-on:click="getImgFull(obj['index'])">
+                                Скачать оригинал
+                            </button>
+                        </div>
                     </div>
                 </div>
+            </div>
+            <div v-else>
+                <p class="lead">
+                    Нет данных
+                </p>
             </div>
         </div>
     </div><!-- /.container -->
