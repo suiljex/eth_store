@@ -45,7 +45,7 @@ def randomString(stringLength):
 
 @app.route('/<path:path>')
 def send_static(path):
-    return send_from_directory('.', path)
+    return send_from_directory('./public/', path)
 
 
 @app.route('/')
