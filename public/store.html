@@ -52,7 +52,7 @@
                 <p class="lead">Нет изображений</p>
             </div>
             <div class="row">
-                <div class="col-md-3 border-right-0 card" v-for="obj in store_objects">
+                <div class="col-md-3 card text-center" v-for="obj in store_objects">
                     <img class="card-img-top" :src="getImgMinUrl(obj['hash'])" :alt="obj['hash']"
                          v-on:click="openObject(obj['index'])">
                     <div class="card-body">
